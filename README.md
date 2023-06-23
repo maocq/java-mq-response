@@ -17,6 +17,10 @@ setmqaut -m QM1 -n SYSTEM.DEFAULT.MODEL.QUEUE -t queue -p app +get +put +inq +ds
 docker container exec -it ibmmq setmqaut -m QM1 -n SYSTEM.DEFAULT.MODEL.QUEUE -t queue -p app +get +put +inq +dsp
 ```
 
+input-queue: "DEV.QUEUE.2"
+
+
+
 ```sh
 docker container exec -it ibmmq sh
 /opt/mqm/samp/bin/amqsgetc DEV.QUEUE.1 QM1

@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
+
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -41,14 +43,19 @@ public class SampleMQMessageListener {
         Destination destination = message.getJMSReplyTo();
         String correlationID = message.getJMSMessageID();
 
+        log.info("Destination: {}", message.getJMSDestination());
+        log.info("ReplyTo: {}", message.getJMSReplyTo());
+        log.info("CorrelationID: {}", message.getJMSCorrelationID());
         log.info("Message received: {}", text);
 
-        return sender.send(destination, context -> {
-            Message textMessage = context.createTextMessage(text);
-            textMessage.setJMSCorrelationID(correlationID);
+        return Mono.just(0)
+                .delayElement(Duration.ofMillis(0))
+                .flatMap(x -> sender.send(destination, context -> {
+                    Message textMessage = context.createTextMessage(text);
+                    textMessage.setJMSCorrelationID(correlationID);
 
-            return textMessage;
-        });
+                    return textMessage;
+                }));
     }
 
     // For an automatic generated temporary queue

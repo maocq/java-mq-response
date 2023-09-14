@@ -25,3 +25,23 @@ input-queue: "DEV.QUEUE.2"
 docker container exec -it ibmmq sh
 /opt/mqm/samp/bin/amqsgetc DEV.QUEUE.1 QM1
 ```
+
+- Comandos
+```sh
+# Display queue manager
+dspmq
+
+# Ejecutar comandos dentro del QM
+runmqsc QM1
+
+  # Display queue 
+  dis qlocal(DEV.QUEUE.1)
+  dis qlocal(AMQ.6503235B256C1301)
+  
+  # Delete queue (Si no esta en uso)
+  delete qlocal(AMQ.6503235B256C1301)
+  
+  # Obtener conexión
+  DIS CONN(*)  WHERE(OBJNAME EQ AMQ.6503235B256C1301)
+  stop conn(441F036500130240)
+```

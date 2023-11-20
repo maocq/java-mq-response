@@ -3,37 +3,33 @@ package co.com.bancolombia.mq.listener;
 import co.com.bancolombia.commons.jms.api.MQMessageSender;
 import co.com.bancolombia.commons.jms.mq.EnableMQMessageSender;
 import co.com.bancolombia.commons.jms.mq.MQListener;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Timer;
 import jakarta.jms.Destination;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
-
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-@AllArgsConstructor
 @EnableMQMessageSender
 public class SampleMQMessageListener {
-    private final Timer timer = Metrics.timer("mq_receive_message", "operation", "my-operation"); // TODO: Change operation name
 
     private final MQMessageSender sender;
-    // private final SampleUseCase useCase;
+    private final int delay;
+
+    public SampleMQMessageListener(MQMessageSender sender, @Value("${mq-response.delay}") int delay) {
+        this.sender = sender;
+        this.delay = delay;
+    }
 
     // For fixed queues
     @MQListener
     public Mono<Void> process(Message message) throws JMSException {
-        timer.record(System.currentTimeMillis() - message.getJMSTimestamp(), TimeUnit.MILLISECONDS);
-        String text = ((TextMessage) message).getText();
-        // return useCase.sample(text);
         return send(message)
                 .then();
     }
@@ -43,13 +39,12 @@ public class SampleMQMessageListener {
         Destination destination = message.getJMSReplyTo();
         String correlationID = message.getJMSMessageID();
 
-        log.info("Destination: {}", message.getJMSDestination());
         log.info("ReplyTo: {}", message.getJMSReplyTo());
-        log.info("CorrelationID: {}", message.getJMSCorrelationID());
+        log.info("CorrelationID: {}", correlationID);
         log.info("Message received: {}", text);
 
         return Mono.just(0)
-                .delayElement(Duration.ofMillis(0))
+                .delayElement(Duration.ofMillis(delay))
                 .flatMap(x -> sender.send(destination, context -> {
                     Message textMessage = context.createTextMessage(text);
                     textMessage.setJMSCorrelationID(correlationID);

@@ -31,5 +31,8 @@ commons:
     producer-ttl: 0
 ibm:
   mq:
+    conn-name: "${MQ_RESPONSE_HOST:127.0.0.1(1414)}"
     channel: "DEV.APP.SVRCONN"
     user: "app"
+mq-response:
+  delay: ${MQ_RESPONSE_DELAY:0}
